@@ -1,0 +1,68 @@
+version: '3.7'
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      # user_service:
+      #   condition: service_healthy
+      product_service:
+        condition: service_healthy
+
+  # user_service:
+  #   build: ./userService
+  #   environment:
+  #     - FLASK_ENV=development
+  #     - DATABASE_URL=postgresql://user:password@user_db:5432/user_db
+  #     - SECRET_KEY=mySuperSecretKey
+  #   depends_on:
+  #     - user_db
+  #   ports:
+  #     - "5000:5000"
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5000/test"]
+  #     interval: 1m30s
+  #     timeout: 10s
+  #     retries: 5
+  #     # start_period: 30s
+
+  product_service:
+    build: ./productService
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://user:password@product_db:5432/product_db
+      - SECRET_KEY=mySuperSecretKey
+    depends_on:
+      - product_db
+    ports:
+      - "5001:5001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/product"]
+      interval: 1m30s
+      timeout: 10s
+      retries: 5
+      # start_period: 30s
+
+  # user_db:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: user_db
+  #   volumes:
+  #     - user_db_data:/var/lib/postgresql/data
+
+  product_db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: product_db
+    volumes:
+      - product_db_data:/var/lib/postgresql/data
+
+volumes:
+  user_db_data:
+  product_db_data:
